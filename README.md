@@ -1,6 +1,6 @@
 # LocalChatApp (本地网络聊天室)
 
-添砖加瓦小组的第二次小项目：一个基于 Java Swing 和 Socket 的本地局域网聊天应用。
+一个基于 Java Swing 和 Socket 的本地局域网聊天应用。
 
 ## 简介
 
