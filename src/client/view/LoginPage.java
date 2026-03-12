@@ -111,5 +111,3 @@ public class LoginPage extends JFrame {
         inviteDialog.setVisible(true);
     }
 }
-
-
