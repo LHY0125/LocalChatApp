@@ -4,9 +4,9 @@ package global;
  * 全局配置类
  * 全局变量均在此处，不要随意更改！！！局部变量命名不要有冲突
  */
-public class global {
+public class Global {
     // ====================== 1. 网络与基础配置 ======================
-    public static final int SERVER_PORT = 1145; // 服务端监听端口，两端统一
+    public static final int SERVER_PORT = 11451; // 服务端监听端口，两端统一
     public static final String LOCAL_HOST = "127.0.0.1"; // 本地IP，客户端连接服务端用
     public static final String SERVER_ACCOUNT = "admin"; // 服务端账户名
     public static final int AUTO_SAVE_PERIOD = 1200; // 自动保存周期（单位：秒）

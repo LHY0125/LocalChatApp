@@ -3,7 +3,7 @@ package util;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 
-import static global.global.DATA_SPLIT;
+import static global.Global.DATA_SPLIT;
 
 /**
  * 工具类，用于将聊过天记录拆分/整合

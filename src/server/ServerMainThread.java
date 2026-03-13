@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
-import static global.global.SERVER_PORT;
+import global.Global;
 
 public class ServerMainThread extends Thread {
     // 服务器运行状态
@@ -23,6 +23,8 @@ public class ServerMainThread extends Thread {
     private static ExecutorService receiveThreadPool;
     // 用于存储每个客户端的消息队列
     private static ConcurrentHashMap<Socket, ArrayBlockingQueue<Wrapper>> msgQueues;
+    
+    private ServerSocket serverSocket;
 
     // 核心：启动服务、监听端口、循环接收客户端连接
     @Override
@@ -31,46 +33,57 @@ public class ServerMainThread extends Thread {
         // 初始化推送信息线程池
         chatThreadPool = new ThreadPoolExecutor(
                 10, // 核心线程数
-                50, // 最大线程数
+                200, // 最大线程数
                 60L, TimeUnit.SECONDS, // 空闲线程存活时间
                 new SynchronousQueue<>(), // 直接提交队列
-                new ThreadPoolExecutor.CallerRunsPolicy() // 拒绝策略
+                new ThreadPoolExecutor.AbortPolicy() // 拒绝策略
         );
         receiveThreadPool = new ThreadPoolExecutor(
                 10, // 核心线程数
-                50, // 最大线程数
+                200, // 最大线程数
                 60L, TimeUnit.SECONDS, // 空闲线程存活时间
                 new SynchronousQueue<>(), // 直接提交队列
-                new ThreadPoolExecutor.CallerRunsPolicy() // 拒绝策略
+                new ThreadPoolExecutor.AbortPolicy() // 拒绝策略
         );
 
         // 初始化消息队列
         msgQueues = new ConcurrentHashMap<>();
 
+        // 初始化信息线程池成功
         System.out.println("初始化信息线程池成功");
-        System.out.println("服务器启动成功");
+
         try {
-            ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
+            // 尝试绑定端口
+            serverSocket = new ServerSocket(Global.SERVER_PORT);
+            System.out.println("服务器启动成功，监听端口: " + Global.SERVER_PORT);
 
             while (running) {
+                try {
+                    // 扫描端口，接收链接请求，如果有链接请求，则尝试链接
+                    Socket clientSocket = serverSocket.accept();
+                    System.out.println("有新的用户端连接: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
 
-                // 扫描端口，接收链接请求，如果有链接请求，则尝试链接
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("有新的用户端连接: " + clientSocket.getPort());
+                    // 创建线程，处理客户端请求
+                    ArrayBlockingQueue<Wrapper> threadQueue = new ArrayBlockingQueue<>(40);
+                    msgQueues.put(clientSocket, threadQueue);
 
-                // 创建线程，处理客户端请求
-                ArrayBlockingQueue<Wrapper> threadQueue = new ArrayBlockingQueue<>(40);
-                msgQueues.put(clientSocket, threadQueue);
+                    ClientChatThread clientChatThread = new ClientChatThread(clientSocket, threadQueue);
+                    chatThreadPool.execute(clientChatThread);
 
-                ClientChatThread clientChatThread = new ClientChatThread(clientSocket, threadQueue);
-                chatThreadPool.submit(clientChatThread);
-                Thread.sleep(200);
-                ClientReceiveThread clientReceiveThread = new ClientReceiveThread(clientSocket, threadQueue);
-                receiveThreadPool.submit(clientReceiveThread);
-                System.out.println("创建线程成功");
+                    ClientReceiveThread clientReceiveThread = new ClientReceiveThread(clientSocket, threadQueue);
+                    receiveThreadPool.execute(clientReceiveThread);
+
+                    System.out.println("创建处理线程成功");
+                } catch (Exception e) {
+                    System.err.println("处理客户端连接时发生错误: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            System.err.println("服务器启动失败: " + e.getMessage());
+            e.printStackTrace();
+            // 抛出运行时异常会导致线程退出
+            throw new RuntimeException("服务器启动失败", e);
         }
     }
 
@@ -79,7 +92,7 @@ public class ServerMainThread extends Thread {
         FileUtil.saveServerData();
         // 向所有用户发送服务器关闭信息。
         if (msgQueues != null) {
-            Wrapper exitMsg = new Wrapper(global.global.OPT_EXIT);
+            Wrapper exitMsg = new Wrapper(Global.OPT_EXIT);
             for (ArrayBlockingQueue<Wrapper> queue : msgQueues.values()) {
                 try {
                     queue.put(exitMsg);
@@ -90,6 +103,13 @@ public class ServerMainThread extends Thread {
         }
 
         running = false;
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     // 检查服务器是否运行

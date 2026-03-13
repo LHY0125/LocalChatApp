@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.view.LoginPage" stylesheets="@../css/Login.css" styleClass="root-pane">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <Label text="Local Chat" styleClass="title-label">
+        <font>
+            <Font size="24.0" />
+        </font>
+    </Label>
+   <Label fx:id="statusLabel" text="" textFill="RED" />
+
+    <VBox spacing="10.0" maxWidth="300.0">
+        <Label text="User ID:" />
+        <TextField fx:id="userIdField" promptText="Enter your ID" />
+        
+        <Label text="Password:" />
+        <PasswordField fx:id="passwordField" promptText="Enter your password" />
+    </VBox>
+
+    <HBox alignment="CENTER" spacing="20.0">
+        <Button fx:id="loginButton" text="Login" onAction="#onLoginButtonClick" defaultButton="true" styleClass="primary-button"/>
+        <Button fx:id="registerButton" text="Register" onAction="#onRegisterButtonClick" styleClass="secondary-button"/>
+    </HBox>
+</VBox>

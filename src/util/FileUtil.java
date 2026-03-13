@@ -17,24 +17,32 @@ public class FileUtil {
     // 数据文件夹
     public static final String DATA_FILE = "data";
 
-    // 子文件夹
+    // 子文件夹 (保留用于兼容旧数据)
     public static final String GROUPS_DIR = "groups";
     public static final String FRIENDS_DIR = "friends";
 
-    // 服务器数据文件名
-    public static final String SERVER_DATA_FILENAME = "server_data.data";
+    // 旧的服务器数据文件名 (保留用于兼容旧数据)
+    // public static final String SERVER_DATA_FILENAME = "server_data.data";
+
+    // 新的统一服务器数据文件名
+    public static final String SERVER_FULL_DATA_FILENAME = "server_data_full.data";
 
     // 聊天历史消息存储文件夹名
     public static final String CHAT_DATA_DIRNAME = "chat_data";
 
-    // 辅助方法：获取Group ServerData路径
-    private static Path getGroupServerDataPath() {
-        return Paths.get(DATA_FILE, GROUPS_DIR, SERVER_DATA_FILENAME);
+    // 辅助方法：获取新的统一数据文件路径
+    private static Path getServerFullDataPath() {
+        return Paths.get(DATA_FILE, SERVER_FULL_DATA_FILENAME);
     }
 
-    // 辅助方法：获取Friend ServerData路径
-    private static Path getFriendServerDataPath() {
-        return Paths.get(DATA_FILE, FRIENDS_DIR, SERVER_DATA_FILENAME);
+    // 辅助方法：获取旧的 Group ServerData路径
+    private static Path getOldGroupServerDataPath() {
+        return Paths.get(DATA_FILE, GROUPS_DIR, "server_data.data");
+    }
+
+    // 辅助方法：获取旧的 Friend ServerData路径
+    private static Path getOldFriendServerDataPath() {
+        return Paths.get(DATA_FILE, FRIENDS_DIR, "server_data.data");
     }
 
     // 辅助方法：获取Chat Data路径
@@ -45,14 +53,24 @@ public class FileUtil {
 
     /**
      * 读取文件中的serverData信息，返回ServerData对象
-     * 从groups和friends文件夹分别读取并合并
+     * 优先读取新的统一文件，如果不存在则尝试读取旧文件并合并
      */
     public static ServerData loadServerData() {
+        // 1. 尝试加载新的统一数据文件
+        ServerData fullData = loadDataFromFile(getServerFullDataPath());
+        if (fullData != null) {
+            System.out.println("成功加载统一服务器数据文件");
+            return fullData;
+        }
+
+        System.out.println("统一数据文件不存在，尝试加载旧版本数据并合并...");
+
+        // 2. 如果不存在，尝试加载旧数据并合并
         ServerData finalData = new ServerData();
         boolean loadedAny = false;
 
-        // 1. Load Group Data
-        ServerData groupData = loadDataFromFile(getGroupServerDataPath());
+        // Load Group Data
+        ServerData groupData = loadDataFromFile(getOldGroupServerDataPath());
         if (groupData != null) {
             if (groupData.getServerGroups() != null) {
                 finalData.setServerGroups(groupData.getServerGroups());
@@ -60,8 +78,8 @@ public class FileUtil {
             loadedAny = true;
         }
 
-        // 2. 加载好友数据
-        ServerData friendData = loadDataFromFile(getFriendServerDataPath());
+        // Load Friend Data
+        ServerData friendData = loadDataFromFile(getOldFriendServerDataPath());
         if (friendData != null) {
             if (friendData.getServerUsers() != null) {
                 finalData.setServerUsers(friendData.getServerUsers());
@@ -69,7 +87,17 @@ public class FileUtil {
             loadedAny = true;
         }
 
-        return loadedAny ? finalData : null;
+        if (loadedAny) {
+            System.out.println("旧数据加载并合并成功，将保存为新格式...");
+            // 立即保存为新格式，以便下次直接加载
+            // 注意：这里不能直接调用 saveServerData()，因为它依赖 ServerData.getInstance()，而此时可能正在初始化
+            // getInstance
+            // 所以我们直接调用内部保存逻辑
+            saveDataToFile(getServerFullDataPath(), finalData);
+            return finalData;
+        }
+
+        return null;
     }
 
     private static ServerData loadDataFromFile(Path path) {
@@ -86,25 +114,12 @@ public class FileUtil {
 
     /**
      * 使用静态方法获取serverData对象，将serverData中的信息写入文件中
+     * 直接序列化整个 ServerData 对象
      */
     public static void saveServerData() {
         ServerData data = ServerData.getInstance();
-
-        // Save Groups
-        ServerData groupData = new ServerData();
-        groupData.setServerGroups(data.getServerGroups());
-        // 清空 Users，避免重复存储到groups文件
-        groupData.setServerUsers(null);
-        saveDataToFile(getGroupServerDataPath(), groupData);
-
-        // Save Friends
-        ServerData friendData = new ServerData();
-        friendData.setServerUsers(data.getServerUsers());
-        // 清空 Groups，避免重复存储到friends文件
-        friendData.setServerGroups(null);
-        saveDataToFile(getFriendServerDataPath(), friendData);
-
-        System.out.println("服务器数据保存成功");
+        saveDataToFile(getServerFullDataPath(), data);
+        System.out.println("服务器数据保存成功 (统一格式)");
     }
 
     private static void saveDataToFile(Path path, ServerData data) {
@@ -113,11 +128,13 @@ public class FileUtil {
             file.getParentFile().mkdirs();
         }
 
+        // 确保 ServerData 本身是可序列化的，并且所有字段（serverUsers, serverGroups 等）也是可序列化的
         synchronized (ServerData.class) {
             try (ObjectOutputStream oos = new ObjectOutputStream(
                     new BufferedOutputStream(new FileOutputStream(file)))) {
                 oos.writeObject(data);
             } catch (IOException e) {
+                System.err.println("保存数据失败: " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -127,7 +144,9 @@ public class FileUtil {
      * 检查数据文件是否存在 (任意一个存在即认为存在)
      */
     public static boolean isDataFileExists() {
-        return Files.exists(getGroupServerDataPath()) || Files.exists(getFriendServerDataPath());
+        return Files.exists(getServerFullDataPath()) ||
+                Files.exists(getOldGroupServerDataPath()) ||
+                Files.exists(getOldFriendServerDataPath());
     }
 
     /**
@@ -135,12 +154,18 @@ public class FileUtil {
      */
     public static long getDataFileSize() {
         long size = 0;
-        File gFile = getGroupServerDataPath().toFile();
+        File fullFile = getServerFullDataPath().toFile();
+        if (fullFile.exists())
+            size += fullFile.length();
+
+        File gFile = getOldGroupServerDataPath().toFile();
         if (gFile.exists())
             size += gFile.length();
-        File fFile = getFriendServerDataPath().toFile();
+
+        File fFile = getOldFriendServerDataPath().toFile();
         if (fFile.exists())
             size += fFile.length();
+
         return size;
     }
 
@@ -201,6 +226,9 @@ public class FileUtil {
         }
 
         Path path = getChatDataPath(groupId, isGroup);
+
+        // 尝试从新路径读取，如果不存在，且是群聊，尝试旧路径（为了简单，这里暂时不处理旧聊天记录的迁移，因为聊天记录是文本文件，相对独立）
+        // 如果需要，可以在这里增加 fallback 逻辑
 
         List<String> lines;
         try {

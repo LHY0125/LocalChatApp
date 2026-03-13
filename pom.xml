@@ -14,87 +14,66 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <javafx.version>17.0.6</javafx.version>
   </properties>
 
   <dependencies>
+    <!-- JavaFX Dependencies -->
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>${javafx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+      <version>${javafx.version}</version>
+    </dependency>
+
+    <!-- Test Dependencies -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <version>5.7.1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/junit-jupiter-engine-5.7.1.jar</systemPath>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
       <version>5.7.1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/junit-jupiter-params-5.7.1.jar</systemPath>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-engine</artifactId>
       <version>1.7.1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/junit-platform-engine-1.7.1.jar</systemPath>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-commons</artifactId>
       <version>1.7.1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/junit-platform-commons-1.7.1.jar</systemPath>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>5.7.1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/junit-jupiter-api-5.7.1.jar</systemPath>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apiguardian</groupId>
       <artifactId>apiguardian-api</artifactId>
       <version>1.1.0</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/apiguardian-api-1.1.0.jar</systemPath>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.opentest4j</groupId>
       <artifactId>opentest4j</artifactId>
       <version>1.2.0</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/opentest4j-1.2.0.jar</systemPath>
-    </dependency>
-
-    <!-- Source: https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
-    <dependency>
-      <groupId>org.openjfx</groupId>
-      <artifactId>javafx-swing</artifactId>
-      <version>26-ea+22</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/javafx-swing-26-ea+22.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>org.openjfx</groupId>
-      <artifactId>javafx-graphics</artifactId>
-      <version>26-ea+22</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/javafx-graphics-26-ea+22.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>org.openjfx</groupId>
-      <artifactId>javafx-base</artifactId>
-      <version>26-ea+22</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/javafx-base-26-ea+22.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>com.formdev</groupId>
-      <artifactId>flatlaf</artifactId>
-      <version>3.2.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

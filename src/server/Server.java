@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Server {
-
     public static void main(String[] args) {
         //启动服务器
         ServerMainThread serverThread = new ServerMainThread();
@@ -29,14 +28,13 @@ public class Server {
         }, 1200, 1200, TimeUnit.SECONDS);
 
         Scanner sc = new Scanner(System.in);
-        while (true) {
+        while (ServerMainThread.isRunning()) {
             // System.out.print("SERVER_CMD>>");
             String cmd = sc.nextLine();
             switch (cmd) {
                 case "shutdown":
                     serverThread.shutdown();
                     System.out.println("=======服务器已关闭=======");
-                    System.exit(0);
                     break;
                 case "groupInfo":
                     System.out.println("=======群聊列表=======");
@@ -60,5 +58,6 @@ public class Server {
                     System.out.println("无效指令");
             }
         }
+        sc.close();
     }
 }

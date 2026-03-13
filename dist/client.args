@@ -1,0 +1,10 @@
+--type app-image
+--name LocalChatClient
+--input target
+--main-jar LocalChatRoom-1.0-SNAPSHOT.jar
+--main-class client.App
+--dest dist
+--java-options -Dfile.encoding=UTF-8
+--java-options -Djava.net.preferIPv4Stack=true
+--icon dist/LocalChat.ico
+--win-console

@@ -1,9 +1,7 @@
 package client.service;
 
-import client.view.MainPage;
 import server.serveice.Wrapper;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -54,11 +52,8 @@ public class ChatSender extends Thread {
                 break;
             } catch (IOException e) {
                 if (isConnectionClosed(e)) {
-                    SwingUtilities.invokeLater(() -> {
-                        JOptionPane.showMessageDialog(MainPage.get(), "服务器连接已断开，请重新登录。", "连接断开",
-                                JOptionPane.ERROR_MESSAGE);
-                        System.exit(0);
-                    });
+                    LocalData.get().addSystemMessage("服务器连接已断开，请重新登录。");
+                    System.exit(0);
                     System.out.println("服务器连接已断开");
                     break;
                 } else {

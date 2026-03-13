@@ -1,6 +1,6 @@
 package server.serveice;
 
-import global.global;
+import global.Global;
 import server.ServerMainThread;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class ClientReceiveThread implements Runnable {
             try {
                 Wrapper msg = (Wrapper) ois.readObject();
                 // 如果收到的是关闭信息，则这个循环结束后关闭自身
-                if (msg.getOperation() == global.OPT_LOGOUT) {
+                if (msg.getOperation() == Global.OPT_LOGOUT) {
                     isRunning = false;
                     System.out.println("接受线程已结束");
                 }
@@ -52,7 +52,8 @@ public class ClientReceiveThread implements Runnable {
                 messageQueue.put(msg);
             } catch (InterruptedException e) {
                 System.out.println("消息队列被中断");
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                break;
             } catch (IOException e) {
                 if (isConnectionClosed(e)) {
                     // 链接断开则结束链接
